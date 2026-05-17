@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Multi-Season Stream</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #ff4757;
+        }
+
+        .controls-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        select {
+            background-color: #222;
+            color: #fff;
+            border: 2px solid #333;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+            min-width: 150px;
+            transition: 0.3s;
+        }
+
+        select:focus {
+            border-color: #ff4757;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.5);
+        }
+
+        #animeVideoFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 🛡️ Smart Bypass Layer to handle strict redirects */
+        .click-bypass-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            cursor: pointer;
+            background: rgba(0,0,0,0.01);
+            display: none;
+        }
+
+        .ad-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .ad-box {
+            background: #222;
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px solid #ff4757;
+            max-width: 400px;
+            width: 90%;
+            box-sizing: border-box;
+        }
+
+        .ad-box h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .ad-btn {
+            display: inline-block;
+            background-color: #ff4757;
+            color: white;
+            padding: 12px 24px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .ad-btn:hover {
+            background-color: #ff6b81;
+        }
+
+        .close-btn {
+            display: none;
+            background-color: #2ed573;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        .close-btn:hover {
+            background-color: #26af5f;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Watch Anime Online</h1>
+
+<div class="controls-container">
+    <select id="animeSelect">
+        <option value="">Select Anime</option>
+    </select>
+
+    <select id="seasonSelect" disabled>
+        <option value="">Select Season</option>
+    </select>
+
+    <select id="languageSelect" disabled>
+        <option value="">Select Language</option>
+    </select>
+
+    <select id="episodeSelect" disabled>
+        <option value="">Select Episode</option>
+    </select>
+</div>
+
+<div class="video-container">
+    <div class="click-bypass-layer" id="bypassLayer"></div>
+
+    <iframe id="animeVideoFrame" src="" allowfullscreen></iframe>
+
+    <div class="ad-overlay" id="adOverlay">
+        <div class="ad-box">
+            <h2>Stream Paused</h2>
+            <p>To continue watching this anime, please click the button below:</p>
+            <a href="https://surl.li/surppl" target="_blank" class="ad-btn" id="adLink">To Continue Click Here</a>
+            <button class="close-btn" id="closeAdBtn">Continue Anime</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const animeData = {
+        "Death Note": {
+            "Season 1": {
+                "Original Audio": {
+                    "Episode 1": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 2": { "720p": "https://archive.org/download/death-note-s-1-e-2-720-p/Death%20Note-S1E2-720P.mp4" },
+                    "Episode 3": { "720p": "https://archive.org/download/death-note-s-1-e-14-720-p/Death%20Note-S1E3-720P.mp4" },
+                    "Episode 4": { "720p": "https://archive.org/download/death-note-s-1-e-14-720-p/Death%20Note-S1E4-720P.mp4" },
+                    "Episode 5": { "720p": "https://archive.org/download/death-note-s-1-e-14-720-p/Death%20Note-S1E5-720P.mp4" },
+                    "Episode 6": { "720p": "https://archive.org/download/death-note-s-1-e-14-720-p/Death%20Note-S1E6-720P.mp4" },
+                    "Episode 7": { "720p": "https://archive.org/download/death-note-s-1-e-14-720-p/Death%20Note-S1E7-720P.mp4" },
+                    "Episode 8": { "720p": "https://archive.org/download/death-note-s-1-e-14-720-p/Death%20Note-S1E8-720P.mp4" },
+                    "Episode 9": { "720p": "https://archive.org/download/death-note-s-1-e-14-720-p/Death%20Note-S1E9-720P.mp4" },
+                    "Episode 10": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 11": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 12": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 13": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 14": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 15": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 16": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 17": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 18": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 19": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 20": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 21": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" },
+                    "Episode 22": { "720p": "https://archive.org/download/death-note-s-1-e-1-720-p/Death%20Note-S1E1-720P.mp4" }                   
+                },
+                "Hindi Dub": {
+                    "Episode 1": { "720p": "link" },
+                    "Episode 2": { "720p": "link" },
+                    "Episode 3": { "720p": "link" },
+                    "Episode 4": { "720p": "link" },
+                    "Episode 5": { "720p": "link" },
+                    "Episode 6": { "720p": "link" },
+                    "Episode 7": { "720p": "link" },
+                    "Episode 8": { "720p": "link" },
+                    "Episode 9": { "720p": "link" },
+                    "Episode 10": { "720p": "link" },
+                    "Episode 11": { "720p": "link" },
+                    "Episode 12": { "720p": "link" },
+                    "Episode 13": { "720p": "link" },
+                    "Episode 14": { "720p": "link" },
+                    "Episode 15": { "720p": "link" },
+                    "Episode 16": { "720p": "link" },
+                    "Episode 17": { "720p": "link" },
+                    "Episode 19": { "720p": "link" },
+                    "Episode 20": { "720p": "link" },
+                    "Episode 21": { "720p": "link" },
+                    "Episode 22": { "720p": "link" },
+                    "Episode 23": { "720p": "link" },
+                    "Episode 24": { "720p": "link" },
+                    "Episode 25": { "720p": "link" },
+                    "Episode 26": { "720p": "link" },
+                    "Episode 27": { "720p": "link" },
+                    "Episode 28": { "720p": "link" },
+                    "Episode 29": { "720p": "link" },
+                    "Episode 30": { "720p": "link" },
+                    "Episode 31": { "720p": "link" },
+                    "Episode 32": { "720p": "link" },
+                    "Episode 33": { "720p": "link" },
+                    "Episode 35": { "720p": "link" },
+                    "Episode 36": { "720p": "link" },
+                    "Episode 37": { "720p": "link" }
+                },
+                "English Dub": {
+                    "Episode 1": { "720p": "https://archive.org/download/death-note-english-s-1-e-4-480-p/Death%20Note%20%5BEnglish%5D-S1E1-480P.mp4" },
+                    "Episode 2": { "720p": "https://archive.org/download/death-note-english-s-1-e-4-480-p/Death%20Note%20%5BEnglish%5D-S1E2-480P.mp4" },
+                    "Episode 3": { "720p": "https://archive.org/download/death-note-english-s-1-e-4-480-p/Death%20Note%20%5BEnglish%5D-S1E3-480P.mp4" },
+                    "Episode 4": { "720p": "https://archive.org/download/death-note-english-s-1-e-4-480-p/Death%20Note%20%5BEnglish%5D-S1E4-480P.mp4" },
+                    "Episode 5": { "720p": "link" },
+                    "Episode 6": { "720p": "link" },
+                    "Episode 7": { "720p": "link" },
+                    "Episode 8": { "720p": "link" },
+                    "Episode 9": { "720p": "link" },
+                    "Episode 10": { "720p": "link" },
+                    "Episode 11": { "720p": "link" },
+                    "Episode 12": { "720p": "link" },
+                    "Episode 13": { "720p": "link" },
+                    "Episode 14": { "720p": "link" },
+                    "Episode 15": { "720p": "link" },
+                    "Episode 16": { "720p": "link" },
+                    "Episode 17": { "720p": "link" },
+                    "Episode 18": { "720p": "link" },
+                    "Episode 19": { "720p": "link" },
+                    "Episode 20": { "720p": "link" },
+                    "Episode 21": { "720p": "link" },
+                    "Episode 22": { "720p": "link" },
+                    "Episode 23": { "720p": "link" },
+                    "Episode 24": { "720p": "link" },
+                    "Episode 25": { "720p": "link" },
+                    "Episode 26": { "720p": "link" },
+                    "Episode 27": { "720p": "link" },
+                    "Episode 28": { "720p": "link" },
+                    "Episode 29": { "720p": "link" },
+                    "Episode 30": { "720p": "link" },
+                    "Episode 31": { "720p": "link" },
+                    "Episode 32": { "720p": "link" },
+                    "Episode 33": { "720p": "link" },
+                    "Episode 35": { "720p": "link" },
+                    "Episode 36": { "720p": "link" },
+                    "Episode 37": { "720p": "link" }
+                }
+            }
+        }
+    };
+
+    const animeSelect = document.getElementById('animeSelect');
+    const seasonSelect = document.getElementById('seasonSelect');
+    const languageSelect = document.getElementById('languageSelect');
+    const episodeSelect = document.getElementById('episodeSelect');
+    const videoFrame = document.getElementById('animeVideoFrame');
+    const bypassLayer = document.getElementById('bypassLayer');
+
+    // Populate Anime Options
+    for (let anime in animeData) {
+        let option = document.createElement('option');
+        option.value = anime; option.innerText = anime;
+        animeSelect.appendChild(option);
+    }
+
+    // Anime Selection Event
+    animeSelect.addEventListener('change', () => {
+        seasonSelect.innerHTML = '<option value="">Select Season</option>';
+        languageSelect.innerHTML = '<option value="">Select Language</option>';
+        episodeSelect.innerHTML = '<option value="">Select Episode</option>';
+        seasonSelect.disabled = true; languageSelect.disabled = true; episodeSelect.disabled = true;
+
+        if (animeSelect.value) {
+            seasonSelect.disabled = false;
+            for (let season in animeData[animeSelect.value]) {
+                let option = document.createElement('option');
+                option.value = season; option.innerText = season;
+                seasonSelect.appendChild(option);
+            }
+        }
+    });
+
+    // Season Selection Event
+    seasonSelect.addEventListener('change', () => {
+        languageSelect.innerHTML = '<option value="">Select Language</option>';
+        episodeSelect.innerHTML = '<option value="">Select Episode</option>';
+        languageSelect.disabled = true; episodeSelect.disabled = true;
+
+        if (seasonSelect.value) {
+            languageSelect.disabled = false;
+            for (let lang in animeData[animeSelect.value][seasonSelect.value]) {
+                let option = document.createElement('option');
+                option.value = lang; option.innerText = lang;
+                languageSelect.appendChild(option);
+            }
+        }
+    });
+
+    // Language Selection Event
+    languageSelect.addEventListener('change', () => {
+        episodeSelect.innerHTML = '<option value="">Select Episode</option>';
+        episodeSelect.disabled = true;
+
+        if (languageSelect.value) {
+            episodeSelect.disabled = false;
+            const episodes = animeData[animeSelect.value][seasonSelect.value][languageSelect.value];
+            for (let ep in episodes) {
+                let option = document.createElement('option');
+                option.value = ep; option.innerText = ep;
+                episodeSelect.appendChild(option);
+            }
+        }
+    });
+
+    // Episode Selection Event
+    episodeSelect.addEventListener('change', () => {
+        if (episodeSelect.value) {
+            const qualitySources = animeData[animeSelect.value][seasonSelect.value][languageSelect.value][episodeSelect.value];
+            const videoUrl = qualitySources["720p"]; 
+            videoFrame.src = videoUrl;
+            
+            // Show anti-redirect layer
+            bypassLayer.style.display = 'block';
+        }
+    });
+
+    // Instant Direct Link Pop Redirection
+    bypassLayer.addEventListener('click', () => {
+        window.open('https://www.effectivecpmnetwork.com/gns647cz?key=de64eff6e82ffd4227fef5e3612071c8', '_blank'); 
+        bypassLayer.style.display = 'none';
+    });
+
+    // 🎯 5 Minutes Manual Confirmation Ad Overlay
+    const adOverlay = document.getElementById('adOverlay');
+    const adLink = document.getElementById('adLink');
+    const closeAdBtn = document.getElementById('closeAdBtn');
+
+    setInterval(() => {
+        if(videoFrame.src !== "" && videoFrame.src !== window.location.href) {
+            showAdPopup();
+        }
+    }, 300000); // Protikhon 5 min por pop up ashbe
+
+    function showAdPopup() {
+        if (adOverlay.style.display === 'flex') return;
+        adOverlay.style.display = 'flex';
+        adLink.style.display = 'inline-block'; // Red button ashbe
+        closeAdBtn.style.display = 'none';    // Green button hidden thakbe
+    }
+
+    // Red button e click korle ad new tab-e chole jabe ar mool tab-e Green button bhese uthbe
+    adLink.addEventListener('click', () => {
+        adLink.style.display = 'none';
+        closeAdBtn.style.display = 'inline-block';
+    });
+
+    // User nij hate ad dekha shesh kore mool tab-e eshe click na kora porjonto overlay sfe-jabe na!
+    closeAdBtn.addEventListener('click', () => {
+        adOverlay.style.display = 'none';
+    });
+</script>
+
+</body>
+</html>
